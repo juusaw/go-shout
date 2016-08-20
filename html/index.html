@@ -1,0 +1,98 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>Go-Shout</title>
+  </head>
+  <style>
+    .container {
+      text-align: center;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    #box {
+      text-align: left;
+      background-color: #fdfdfd;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      height: 300px;
+      padding: 25px;
+      overflow-y: scroll;
+      box-sizing: border-box;
+    }
+  </style>
+  <body>
+    <div class="container">
+      <h3>Shoutbox</h3>
+      <pre id="box"></pre>
+      <input placeholder="Name" id="name" type="text" />
+      <input placeholder="Message" id="text" type="text" />
+      <button id="send">Send</button>
+    </div>
+    <script>
+      var prefix = 'http://';
+      var api_url = prefix + window.location.host + '/api/messages';
+      var url = 'ws://' + window.location.host + '/ws',
+          sock,
+          box = document.getElementById('box'),
+          text = document.getElementById('text'),
+          uname = document.getElementById('name'),
+          MIN_INTERVAL = 1000,
+          last_post = 0;
+
+      try {
+        sock = new WebSocket(url);
+      } catch (e) {
+        box.innerHTML = 'Your browser doesn\'t support WebSockets. Try upgrading to a more recent browser';
+      }
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', api_url);
+      xhr.onload = function() {
+          if (xhr.status === 200) {
+            var content = JSON.parse(xhr.responseText);
+            box.innerHTML += content.map(function(msg) {
+                return formatTime(msg.timestamp) + ' ' + msg.user + ' ' + msg.text + '\n';
+              }).reduce(function (a, b) { return a + '\n' + b; }, '');
+          } else {
+            box.innerHTML = 'Failed to load messages from server';
+          }
+      };
+      xhr.send();
+
+      function formatTime (time) {
+        return new Date(time).toString().split(' ')[4];
+      };
+
+      sock.onmessage = function (msg) {
+        var data = JSON.parse(msg.data);
+        var line =  formatTime(data.timestamp) + ' ' + data.user + ' ' + data.text;
+        box.innerText += '\n' + line + '\n';
+        box.scrollTop = box.scrollHeight;
+      };
+
+      function send (e) {
+        var interval = Date.now() - last_post;
+        if ((e.keyCode === 13 || e.type !== 'keydown') && text.value !== '' && interval > MIN_INTERVAL) {
+          if (sock.readyState === sock.OPEN) {
+            uname.value = uname.value || 'Guest' + Math.floor(Math.random() * 1000);
+            sock.send(JSON.stringify({
+              user:      uname.value,
+              text:      text.value,
+              timestamp: (new Date).toISOString()
+            }));
+          } else {
+            console.log('WebSocket not open');
+          }
+          text.value = '';
+          last_post = Date.now();
+        }
+      }
+      uname.onkeydown = send;
+      text.onkeydown = send;
+      document.getElementById('send').onclick = send;
+      box.scrollTop = box.scrollHeight;
+    </script>
+  </body>
+</html>
