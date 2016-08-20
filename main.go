@@ -64,7 +64,11 @@ func main() {
 		query := db.Find(search).Sort("$natural")
 		var messages []Message
 		query.All(&messages)
-		c.JSON(200, messages)
+		if messages == nil {
+			c.JSON(200, bson.M{})
+		} else {
+			c.JSON(200, messages)
+		}
 	})
 
 	r.POST("api/post", func(c *gin.Context) {
