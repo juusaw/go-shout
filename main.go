@@ -47,6 +47,12 @@ func main() {
 		m.HandleRequest(c.Writer, c.Request)
 	})
 
+	/**
+	 * The messages API endpoint is used for querying messages in backlog.
+	 * There are two query parameters implemented:
+	 *   - user for getting message by username
+	 *   - seconds for querying messages sent during a time period
+	**/
 	r.GET("api/messages", func(c *gin.Context) {
 		search := bson.M{}
 		user := c.Query("user")
@@ -71,6 +77,11 @@ func main() {
 		}
 	})
 
+	/**
+	 * The post API endpoint is for sending messages via HTTP. Required fields
+	 * for messages are user (string) and text (string). Timestamp is added on
+	 * the server. Messages are inserted to database and broadcasted via Websocket.
+	**/
 	r.POST("api/post", func(c *gin.Context) {
 		if c.Query("user") == "" || c.Query("text") == "" {
 			log.Print("Invalid message.")
