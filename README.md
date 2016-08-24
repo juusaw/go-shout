@@ -1,4 +1,4 @@
-# go-shoutbox
+# go-shout
 
 Shoutbox with Golang, MongoDB and WebSockets
 
@@ -6,7 +6,7 @@ Shoutbox with Golang, MongoDB and WebSockets
 
 1 Get the source
 
-`$ go get github.com/juusaw/go-shoutbox`
+`$ go get github.com/juusaw/go-shout`
 
 2 Get dependencies
 
