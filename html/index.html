@@ -58,6 +58,7 @@
           } else {
             box.innerHTML = 'Failed to load messages from server';
           }
+          box.scrollTop = box.scrollHeight;
       };
       xhr.send();
 
@@ -92,7 +93,6 @@
       uname.onkeydown = send;
       text.onkeydown = send;
       document.getElementById('send').onclick = send;
-      box.scrollTop = box.scrollHeight;
     </script>
   </body>
 </html>
